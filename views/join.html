@@ -1,0 +1,111 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>2023 hw2</title>
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <style>
+      input[type=text],input[type=password]{
+        text-align: center;
+        width: 20%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        border: none;
+        border: 1px solid #000000;
+      }
+    button {
+      text-align: center;
+      background-color: #375dbb;
+      color: white;
+      padding: 12px 9px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+  </head>
+  <body>
+    <form id="joinForm" action="/join" method="POST">
+      <div>
+        <input type="text" name="id" placeholder="ID" required/> 
+        <button id="idBtn" type="submit">아이디 중복 확인</button>
+      </div>
+      <div><input type="password" name="pw1" placeholder="비밀번호 입력" pattern="[A-Za-z\d]{4,}" required/>
+        <input type="password" name="pw2" placeholder="비밀번호 재입력"  pattern="[A-Za-z\d]{4,}" required/>
+        <button id="joinBtn" type="submit">회원가입</button>
+      </div>
+    </form>
+
+    <script>
+      const idBtn = document.getElementById("idBtn");
+      const joinBtn = document.getElementById("joinBtn");
+      const joinForm = document.getElementById("joinForm");
+
+      let id;
+
+      joinBtn.disabled = true;  //회원가입 비활성화
+
+      idBtn.addEventListener("click", async () => {
+        // 서버로 id 데이터 전송
+        id = joinForm.querySelector("[name='id']").value;
+        const response = await fetch('/join/id', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        body: JSON.stringify({ id }),
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          alert('사용 가능한 아이디입니다.');
+          joinBtn.disabled = false;  // 회원가입 버튼 활성화
+        } else {
+          alert('사용할 수 없는 아이디입니다! 다시 입력해주세요');
+          joinForm.querySelector("[name='id']").value = '';
+        } 
+
+      });
+
+      joinBtn.addEventListener("click", async (e) => {
+        event.preventDefault(); // 화면 전환 금지
+      
+        const pw1 = joinForm.querySelector("[name='pw1']").value;
+        const pw2 = joinForm.querySelector("[name='pw2']").value;
+
+        // 영어+숫자, 4글자 이상 패턴 지키기
+        const pattern = /[A-Za-z\d]{4,}/;
+          if (!pattern.test(pw1) || !pattern.test(pw2)) {
+           alert('비밀번호는 영문자 대소문자와 숫자를 포함하여 4자 이상이어야 합니다.');
+           return;
+          }
+         
+        const response = await fetch('/join', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id, pw1, pw2 }),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          alert('회원가입 축하합니다.');
+          window.location.replace('/login');
+        } 
+        else {
+          alert('비밀번호가 일치하지 않습니다.');
+          joinForm.querySelector("[name='pw1']").value = '';
+          joinForm.querySelector("[name='pw2']").value = ''; 
+        }
+      });
+    </script>
+  </body>
+</html>

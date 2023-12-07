@@ -1,13 +1,103 @@
 <html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>2023 hw2</title>
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <style>  
+      .container-fluid {
+        padding: 20px;
+      }
+      #welcome {
+        padding: 20px;
+        border-radius: 10px; 
+        text-align: center;
+      }
+      #logout {
+      text-align: center;
+      width: 100%;
+      background-color: #375dbb;
+      color: white;
+      padding: 14px 20px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 4px;
+      }
+      #roomBtn {
+        color: white;
+        text-align: center;
+        background-color: #375dbb;
+        border: none;
+        padding: 10px 8px;
+        border-radius: 4px;
+      }
+      input[type=text] {
+        width: 20%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        border: none;
+        border: 1px solid #000000;
+      }
+    </style>
+  </head>
 
-<head>
-  <title>Express</title>
-  <link rel="stylesheet" href="/stylesheets/style.css">
-</head>
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-3"></div>
+        <div class="col-6" id="welcome">
+          <p>환영합니다 고객님</p>
+          <form>
+            <h2>새로운 방 만들기</h2>
+            <br>
+            <input type="text" placeholder="방 이름 입력" id="roomName" required />
+            <button id="roomBtn" onclick="roomClick()">방 입장</button>
+          </form>
+          <div id="roomlist"></div>
+        </div>
+        <a href="/logout"><button id="logout">로그아웃</button></a>
+        <div class="col-3"></div>
+      </div>
+    </div>
+  <script>
+    async function fetchData() {
+    const localToken = localStorage.getItem("accessToken");
 
-<body>
-  <h1>Express</h1>
-  <p>Welcome to Express</p>
-</body>
+    //'Authorization': `Bearer ${localToken}`,
+    try {
+      const response = await fetch("/", {
+        method: "GET",
+        headers: {
+          'Authorization': `Bearer ${localToken}`,
+          'Content-Type': 'application/json',
+          'Cookie': document.cookie
+        },
+        credentials: 'same-origin', // 쿠키 전송을 위해 추가
+      });
+
+      const result = await response.json();
+
+      if (result.redirectTo) {
+        window.location.replace(result.redirectTo);
+      } else {
+        console.error("서버에서 전달한 이동할 경로가 없습니다.");
+      }
+
+    } catch (error) {
+      // 오류 처리
+      console.error('Error:', error.message);
+    }
+  }
+
+  fetchData();
+  </script>
+  <script src="/javascripts/client.js"></script>
+  </body>
 
 </html>

@@ -1,0 +1,86 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>2023 hw1</title>
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <style>
+      input[type=text],input[type=password]{
+        text-align: center;
+        width: 20%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        border: none;
+        border: 1px solid #000000;
+      }
+    button {
+      text-align: center;
+      background-color: #375dbb;
+      color: white;
+      padding: 12px 9px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+  </head>
+  <body>
+    <form id="loginForm" action="/login" method="POST">
+      <div>
+        <input type="text" id="login_id" placeholder="아이디를 입력하세요" required/> 
+      </div>
+      <div>
+        <input type="password" id="login_pw" placeholder="비밀번호를 입력하세요"  required/>
+      </div>
+      <div>
+        <input type="checkbox" id="checkbox"/>로그인 유지
+      </div>
+      <button id="loginBtn" type="submit">로그인</button>
+    </form>
+    <button onclick="joingo()">회원가입하러 가기</button>
+    <script>
+      //변수 가져오기
+      function joingo() {
+        window.location.href = '/join';
+      }
+      const loginBtn = document.getElementById("loginBtn");
+
+      loginBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        const id = document.getElementById("login_id").value;
+        const pw = document.getElementById("login_pw").value;
+        const checkbox = document.getElementById("checkbox").checkbox;
+
+        const response = await fetch("/login", {
+          method:"POST",
+          headers: {
+            'Content-Type' : 'application/json',
+          },
+          body: JSON.stringify({ id, pw, checkbox }),
+        });
+
+        const result = await response.json();
+
+        if (!result.success){
+          alert("비밀번호가 일치하지 않습니다.");
+        } else if (result.error === '존재하지 않는 아이디입니다.'){
+          alert("존재하지 않는 아이디입니다.")
+        }
+        else {
+          const token = result.token;
+          localStorage.setItem("accessToken", token);
+          alert("로그인 성공");
+          window.location.replace("/");
+        }
+
+      });
+    </script>
+  </body>
+</html>

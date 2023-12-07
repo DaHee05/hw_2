@@ -1,2 +1,4 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-24ddc0f5d75046c5622901739e7c5dd533143b0c8e959d652212380cedb1ea36.svg)](https://classroom.github.com/a/5bs5HfIe)
 # 23-hw1-template
+
+처음에 /login으로 직접 이동해주세요.
+소켓과 데이터베이스 연결이 되어있지 않습니다.
