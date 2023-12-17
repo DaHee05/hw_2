@@ -21,12 +21,11 @@ const socketHandler = (server) =>{
             
         });
 
-        socket.on('join_room', (roomName, done) => {
+        socket.on('join_room', (roomName) => {
             // 해당 방에 조인
             socket.join(roomName);
             socket.roomName = roomName;
             console.log(`사용자가 ${roomName} 방에 조인했습니다.`);
-            done(); // 이동 실행
         });
 
         socket.on('ready', () => {

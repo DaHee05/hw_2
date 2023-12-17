@@ -2,6 +2,7 @@ var express = require("express");
 var router = express.Router();
 const mongoose = require("../mongoose/index")
 const Customer = require("../mongoose/schemas/customer");
+const RoomLists = require("../mongoose/schemas/roomlist");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const { verifyToken } = require("./middlewares");
@@ -10,6 +11,7 @@ mongoose.connect();
 
 // 비밀번호 암호화 해시
 const crypto = require('crypto');
+const { ftruncate } = require("fs");
 
 function hasspassword(password, salt) {
   return new Promise((resolve, reject) =>{
@@ -25,13 +27,15 @@ function hasspassword(password, salt) {
   });
 };
 
-router.get("/", verifyToken, (req, res, next) => {
-  if (!req.decoded) {
-    return res.redirect("/login");
-  }
+router.get("/", function(req, res, next){
   res.render("index");
-})
+});
 
+
+router.get("/loginout", verifyToken, function (req, res, next){
+  res.json({success : true});
+
+});
 
 router.get("/join", function (req, res, next) {
   res.render("join");
@@ -63,7 +67,6 @@ router.post("/join/id", async (req, res, next) => {
     console.error(error.message);
     res.status(500).send(error.message);
   }
-
 });
 
 // 회원가입 아이디와 비밀번호(암호화) 데이터베이스 저장
@@ -140,7 +143,8 @@ router.post("/login", async (req, res, next) => {
     if (!ValidPW) {
       return res.status(400).json({ success: false});
     } else {
-      const expiresIn = checkbox ? "1h" : "5m";
+      const expiresIn = checkbox ? "1h" : "30m";
+      const maxAge = expiresIn === '1h' ? 60 * 60 * 1000 : 30 * 60 * 1000;  // 1시간 또는 30분(ms)로 설정
       const token = jwt.sign(
         {
           id: customer.id,
@@ -152,7 +156,7 @@ router.post("/login", async (req, res, next) => {
           issuer: "토큰 발급자",
         }
       );
-      res.cookie("token", token, { httpOnly: true , maxAge: expiresIn === '1h' ? 60 * 60 * 1000 : 30 * 1000 });
+      res.cookie("token", token, { httpOnly: true , maxAge });
 
       return res.json({
         code: 200,
@@ -172,6 +176,102 @@ router.post("/login", async (req, res, next) => {
 router.get("/logout", (req, res) => {
   res.clearCookie("token");
   res.redirect("/login");
+});
+// 방 
+router.get("/room", function (req, res, next) {
+  res.render("room");
+});
+
+// 승패 기록 저장 record
+router.post("/room", verifyToken, async function (req, res, next) {
+  const { id } = req.decoded;
+  console.log("넘어온",id);
+
+  try {
+    const { Myscore } = req.body;
+    console.log(Myscore);
+
+    const my_record = await Customer.findOne({ id });
+
+    if ( Myscore === 1){
+      my_record.recordWin += 1;
+    } else if (Myscore === 2) {
+      my_record.recordLoser +=1;
+    }
+
+    await my_record.save();
+    res.json({ success: true,typess:false , message: '승패기록 성공적 업로드' });
+  }catch (error){
+    res.status(500).send(`내부 서버 오류: ${error.message}`);
+  }
+});
+
+// 기록 확인
+router.get("/record", verifyToken, async function(req, res, next) {
+  //res.render("record");
+
+  const { id } = req.decoded;
+  console.log("승패기록확인할 id",id);
+
+  try {
+    const Myrecord = await Customer.findOne({id});
+
+    if (!Myrecord){
+      return res.json({ success: false, message: "회원 정보를 찾을 수 없음"});
+    }else {
+      // 승률 계산
+      const winRatesum = (Myrecord.recordWin / (Myrecord.recordWin + Myrecord.recordLoser)) * 100;
+
+      // 소수점 둘째 자리까지 표시하려면
+      const WinRate = winRatesum.toFixed(0)+"%";
+
+      return res.render("record", {Myrecord, WinRate});
+    }
+
+  } catch(error){
+    res.status(500).send(`기록 읽어오기 실패: ${error.message}`)
+  }
+});
+
+// 방 목록 가져오기
+router.get("/roomlists", async (req, res, next) => {
+  try{
+
+    const Allroomlist = await RoomLists.find();
+
+    return res.json({success:true, Allroomlist });
+  } catch(error){
+    console.error(error.message);
+    res.status(500).send(`Internal Server Error: ${error.message}`);
+  }
+});
+
+router.get("/room/:list_id", async (req, res, next) => {
+  res.render("room");
+});
+  
+router.post("/", async function (req, res,next) {
+  const { roomName } = req.body;
+  try{
+
+    // 중복 회피를 위해 지금 있는 post_id보다 +1 큰 값으로 post_id 지정
+    const latestlist = await RoomLists.findOne().sort({ list_id: -1 });
+    const latestListId = latestlist ? latestlist.list_id : 0; // 이전 post_id 없으면 0
+    const newListId = latestListId + 1;
+
+    // 나머지 데이터로 새로운 글 생성
+    const newROOM = new RoomLists({
+      list_id: newListId,
+      roomName
+    });
+
+    // 데이터베이스에 저장
+    await newROOM.save();
+
+    res.json({success:true, newListId});
+  } catch (error){
+    res.status(500).send(`Internal Server Error: ${error.message}`);
+  }
 });
 
 module.exports = router;

@@ -22,7 +22,7 @@
     #output, #maxscore,#score {
       margin: 20px;
     }
-    button {
+    #BBtn, #readyBtn {
       margin: 5px;
       text-align: center;
       background-color: #375dbb;
@@ -36,7 +36,7 @@
 </head>
 <body>
   <p>게임을 시작하려면 Ready 버튼을 눌러주세요</p>
-  <button onclick="goBack()">방 나가기</button>
+  <button id="BBtn" onclick="goBack()">방 나가기</button>
   <div id="readyto">
     <button id="readyBtn">Ready</button>
     <p id="statusMessage"></p>
@@ -53,9 +53,32 @@
   <div id="gameReslut"></div>
   <script src="/javascripts/room.js"></script>
   <script>
-    function goBack() {
-        window.location.href = '/';
+    async function goBack() {
+        //window.location.href = '/';
+        try {
+          const response = await fetch('/room', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+              },
+              body: JSON.stringify({ Myscore }),
+          });
+          
+          const result = await response.json();
+
+          if (response.ok){
+            console.log("승패기록 저장 성공");
+            window.location.href = '/';
+          } else {
+            console.log("승패기록 저장 실패");
+            window.location.href = '/';
+          }
+  } catch (error) {
+    console.error("오류 발생", error); 
+  }
       }
+
   </script>
 </body>
 </html>

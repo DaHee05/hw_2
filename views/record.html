@@ -1,0 +1,87 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>2023 hw2</title>
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <style>  
+      .container-fluid {
+        padding: 20px;
+      }
+      #welcome {
+        padding: 20px;
+        border-radius: 10px; 
+        text-align: center;
+      }
+      #gotoback {
+        color: white;
+        text-align: center;
+        background-color: #375dbb;
+        border: none;
+        padding: 10px 8px;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-3"></div>
+        <div class="col-6" id="welcome">
+          <h2>나의 기록 확인</h2>
+            <br>
+            <div>
+                <span>승리한 전적: </span><span id="Win"><%= Myrecord.recordWin %></span>
+            </div>
+            <div>
+                <span>패배한 전적: </span><span id="lose"><%= Myrecord.recordLoser %></span>
+            </div>
+            <div>
+                <span>승률: </span><span><%= WinRate %></span>
+            </div>
+
+            <br>
+            <button id="gotoback" onclick="goBack()">뒤로가기</button>
+          
+        </div>
+      </div>
+    </div>
+  <script>
+
+    function goBack() {
+        //window.history.back();
+        window.location.href ="/";
+    }
+    async function fetchData() {
+    try {
+      const response = await fetch("/", {
+        method: "GET",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const resulst = await response.json();
+      console.log(resulst);
+
+      if (!response.ok){
+        alert("로그인 후 이용해주세요");
+        window.location.href = "/login";
+      } 
+
+
+    } catch (error) {
+      // 오류 처리
+     
+      console.error('Error:', error.message);
+    }
+  }
+
+  fetchData();
+  </script>
+  </body>
+
+</html>

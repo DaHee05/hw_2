@@ -22,6 +22,7 @@ readyButton.addEventListener('click', (event) => {
   event.preventDefault();
   readyButton.disabled = true;
   gameReslut.hidden = true;
+  console.log("누를거임");
   socket.emit('ready');
 });
 // 서버에서 전송 받은 순서 -> 레디 누른 순
@@ -59,8 +60,9 @@ const maxscore = document.getElementById("maxscore");
 
 let direction = 1;
 let speed = getRandomSpeed();
-let totalValue = 1000; // 시작 점수 
+let totalValue = 200; // 시작 점수 
 let maxValue = 0; // 최대 점수
+let Myscore = 0;
 
 function moveSlider() {
   const sliderPosition = slider.offsetLeft;
@@ -126,6 +128,8 @@ setInterval(changeSpeed, 1000); // 1초마다 속도를 변경합니다.
 
 // 이겼을 경우 
 socket.on('winner', (results) => {
+  Myscore = 1;
+
   gameReslut.hidden = false;
   gameReslut.textContent = results;
   readyButton.disabled = false;
@@ -133,6 +137,8 @@ socket.on('winner', (results) => {
 });
 // 졌을 경우 
 socket.on('loser', (lresults) => {
+  Myscore = 2;
+
   gameReslut.hidden = false;
   gameReslut.textContent = lresults;
   readyButton.disabled = false;

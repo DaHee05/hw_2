@@ -6,7 +6,8 @@ const {Schema} = mongoose;
 const customerSchema = new Schema({
     id : {
         type : String,
-        required : true, //무조건 있어야 한다
+        required : true, 
+        unique: true,
     },
     pw : {
         type : String,
@@ -17,9 +18,15 @@ const customerSchema = new Schema({
         type: String,
         required: true,
     },
-    record: {
-        type : String,
-        required: false,
+    recordWin: {
+        type : Number,
+        required: true,
+        default: 0,
+    },
+    recordLoser: {
+        type : Number,
+        required: true,
+        default: 0,
     }
 });
  

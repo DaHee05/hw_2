@@ -7,20 +7,9 @@ exports.verifyToken = (req, res, next) => {
     const cookies = Object.fromEntries(cookieHeader.split(';').map(cookie => cookie.trim().split('=')));
     const token = cookies.token;
     req.decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
     return next();
   } catch (error) {
-    // 인증 실패
-    if (error.name === "TokenExpireError") {
-      return res.status(419).json({
-        redirectTo: "/login",
-        code: 419,
-        message: "토큰이 만료되었습니다.",
-      });
-    }
-    return res.status(401).json({
-      redirectTo: "/login",
-      code: 401,
-      message: "유효하지 않은 토큰입니다.",
-    });
+    return res.status(401).json({ message: '토큰이 유효하지 않습니다.' });
   }
 };
